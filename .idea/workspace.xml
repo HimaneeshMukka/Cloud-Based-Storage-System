@@ -4,14 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="08ee94af-5c00-40b9-824f-86782c39de3d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="08ee94af-5c00-40b9-824f-86782c39de3d" name="Changes" comment="WIP">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Server.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDP.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDP.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDPPacketSenderManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDPPacketSenderManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDPSocket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDPSocket.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,6 +21,13 @@
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -49,6 +55,17 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <envs>
+        <env name="DEBUG" value="true" />
+      </envs>
+      <option name="MAIN_CLASS_NAME" value="Main" />
+      <module name="cloud-storage.main" />
+      <option name="PROGRAM_PARAMETERS" value="-Ddebug=&quot;true&quot;" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Server" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Server" />
       <module name="cloud-storage.main" />
@@ -56,8 +73,14 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Application.Client" />
+      <item itemvalue="Application.Main" />
+      <item itemvalue="Application.Server" />
+    </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.Main" />
         <item itemvalue="Application.Client" />
         <item itemvalue="Application.Server" />
       </list>
@@ -72,11 +95,34 @@
       <option name="presentableId" value="Default" />
       <updated>1656626255090</updated>
       <workItem from="1656626256799" duration="5567000" />
-      <workItem from="1656715827793" duration="10461000" />
+      <workItem from="1656715827793" duration="23835000" />
     </task>
+    <task id="LOCAL-00001" summary="WIP">
+      <created>1656742608708</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1656742608708</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="WIP" />
+    <option name="LAST_COMMIT_MESSAGE" value="WIP" />
   </component>
 </project>

@@ -58,11 +58,8 @@ public class RUDPSocket {
         }
     }
 
-    public synchronized RUDPDataPacket receive() throws IOException, ClassNotFoundException {
-        byte[] buffer = new byte[100000000]; // 100Mb or 95MB
-        DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
-        this.socket.receive(datagramPacket);
-        return this.convertByteArrayToObject(buffer);
+    public synchronized void receive(RUDPDataPacket dataPacket) throws IOException, ClassNotFoundException {
+
     }
 
     private byte[] convertObjectToByteArray(RUDPDataPacket dataPacket) throws IOException {

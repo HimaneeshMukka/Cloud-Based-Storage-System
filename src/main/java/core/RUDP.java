@@ -86,6 +86,12 @@ public class RUDP implements Closeable {
                                 this.clients.put(clientKey, newClient1);
                             }
                             break;
+                        case ACK:
+                            System.out.println("***********************\nReceived ack from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            if (this.clients.containsKey(clientKey)) {
+                                this.clients.get(clientKey).receive(dataPacket);
+                            }
+                            break;
                         case DATA:
                             System.out.println("***********************\nReceived data from: " + clientKey + "\n" + dataPacket + "\n***********************");
                             if (this.clients.containsKey(clientKey)) {

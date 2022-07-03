@@ -40,6 +40,10 @@ public class RUDPSocket {
         this.socket.send(datagramPacket);
     }
 
+    public void sendAck(RUDPDataPacket dataPacket) throws IOException {
+        this.retransmitPacket(dataPacket);
+    }
+
     /**
      * The protocol we are doing is, if we don't get a `ACK` from the server, we will resend the packet.
      * The receiver will not request a new packet.
@@ -90,7 +94,7 @@ public class RUDPSocket {
         else if (dataPacket.type == RUDPDataPacketType.DATA || dataPacket.type == RUDPDataPacketType.EOD) {
             packetReceiverManager.addPacket(dataPacket);
             // Send an ACK packet to the sender
-            this.send(new RUDPDataPacket(dataPacket.sequenceID, RUDPDataPacketType.ACK));
+            this.sendAck(new RUDPDataPacket(dataPacket.sequenceID, RUDPDataPacketType.ACK));
         }
         else {
             System.out.println("Unknown packet type: " + dataPacket.type);

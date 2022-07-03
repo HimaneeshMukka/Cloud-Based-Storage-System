@@ -5,15 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="08ee94af-5c00-40b9-824f-86782c39de3d" name="Changes" comment="WIP">
-      <change afterPath="$PROJECT_DIR$/src/main/java/core/RUDPDataPacketType.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDP.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDP.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDPDataPacket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDPDataPacket.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDPPacketReceiverManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDPPacketReceiverManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDPPacketSenderManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDPPacketSenderManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDPSocket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDPSocket.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +92,7 @@
       <option name="presentableId" value="Default" />
       <updated>1656626255090</updated>
       <workItem from="1656626256799" duration="5567000" />
-      <workItem from="1656715827793" duration="45448000" />
+      <workItem from="1656715827793" duration="51128000" />
     </task>
     <task id="LOCAL-00001" summary="WIP">
       <created>1656742608708</created>
@@ -116,7 +108,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656786934181</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="WIP">
+      <created>1656822654056</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1656822654056</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

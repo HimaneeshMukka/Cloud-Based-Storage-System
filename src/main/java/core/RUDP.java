@@ -8,6 +8,8 @@ import java.net.SocketException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static java.lang.Thread.sleep;
+
 public class RUDP implements Closeable {
     private InetAddress previousDataReceivedAddress;
     private int previousDataReceivedPort;
@@ -118,6 +120,27 @@ public class RUDP implements Closeable {
         final byte[] data = this.convertObjectToByteArray(dataPacket);
         DatagramPacket datagramPacket = new DatagramPacket(data, data.length, destinationAddress, destinationPortNumber);
         this.socket.send(datagramPacket);
+    }
+
+    public RUDPSocket connect(InetAddress destinationAddress, int destinationPortNumber) {
+        // Send a handshake packet to the server
+        RUDPDataPacket handshake = new RUDPDataPacket(0, RUDPDataPacketType.HANDSHAKE);
+        String clientKey = destinationAddress.getHostAddress() + ":" + destinationPortNumber;
+        int numberOfAttempts = 1;
+        while(!this.clients.containsKey(clientKey)) {
+            try {
+                this.send(handshake, destinationAddress, destinationPortNumber);
+                System.out.println("Sent handshake to: " + clientKey + " Attempt: " + numberOfAttempts++);
+                // Wait for handshake_ack from the server
+                synchronized (this) {
+                    this.wait(5000);
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return this.clients.get(clientKey);
     }
 
 

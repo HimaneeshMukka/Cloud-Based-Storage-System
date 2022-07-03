@@ -9,7 +9,6 @@ public class Server {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         RUDP server = new RUDP(5000);
         server.listen();
-        System.out.println("Server listening on port 5000");
 
         // Sender
 //        new Thread(() -> {

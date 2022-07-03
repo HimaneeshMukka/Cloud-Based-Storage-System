@@ -14,33 +14,45 @@ public class RUDP implements Closeable {
     private final DatagramSocket socket;
 
     private final ConcurrentMap<String, RUDPSocket> clients = new ConcurrentHashMap<>();
-    private Boolean isListening = false;
+    private final StringBuilder isListening = new StringBuilder("false");
 
 
     /**
      * Opens a UDP socket with random available port number
+     *
      * @throws SocketException If there is an error while opening the socket
      */
     public RUDP() throws SocketException {
         this.socket = new DatagramSocket();
+        this.listen();
     }
 
     /**
      * Open a UDP socket with specified port number
+     *
      * @param portNumber UDP socket port number
      * @throws SocketException If there is an error while opening the socket
      */
     public RUDP(int portNumber) throws SocketException {
         this.socket = new DatagramSocket(portNumber);
+        this.listen();
     }
 
-    public void listen() {
+    public synchronized void listen() {
         // Receiver
 
+        // Idempotent operation (if already listening, do nothing)
+        if (Boolean.parseBoolean(this.isListening.toString())) {
+            System.out.println("Already listening");
+            return;
+        }
+        this.isListening.setLength(0);
+        this.isListening.append("true");
+        System.out.println("Listening");
         new Thread(() -> {
             try {
                 while (true) {
-                    System.out.println("Waiting for data...");
+                    System.out.println("\n\nWaiting for data...");
                     byte[] buffer = new byte[100000000]; // 100Mb or 95MB
                     DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
                     this.socket.receive(datagramPacket);
@@ -48,24 +60,52 @@ public class RUDP implements Closeable {
 
                     String clientKey = datagramPacket.getAddress().getHostAddress() + ":" + datagramPacket.getPort();
 
-                    // If it is a new client, create a new socket for it
-                    if(dataPacket.sequenceID == 0) {
-                        System.out.println("Received handshake from client: " + clientKey);
-                        this.clients.put(clientKey, new RUDPSocket(this.socket, datagramPacket.getAddress(), datagramPacket.getPort()));
+                    if(dataPacket == null) {
+                        System.out.println("Received null packet from: " + clientKey);
+                        continue;
+                    }
+                    switch (dataPacket.type) {
+                        case HANDSHAKE:
+                            System.out.println("***********************\nReceived handshake from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            RUDPSocket newClient = new RUDPSocket(this.socket, datagramPacket.getAddress(), datagramPacket.getPort());
+                            this.clients.put(clientKey, newClient);
+                            RUDPDataPacket handshakeACK = new RUDPDataPacket(dataPacket.sequenceID, RUDPDataPacketType.HANDSHAKE_ACK);
+                            newClient.send(handshakeACK);
+                            // Remove it from waitingForACKS map immediately after sending the ACK
+                            newClient.receive(handshakeACK);
+                            break;
+                        case HANDSHAKE_ACK:
+                            System.out.println("***********************\nReceived handshake_ack from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            // This means we have already created a client, and now we remove it from the waitingForACKS map
+                            if (this.clients.containsKey(clientKey)) {
+                                this.clients.get(clientKey).receive(dataPacket);
+                            }
+                            // This happens when we sent a HANDSHAKE packet to the server directly and now server has returned ACK.
+                            else {
+                                RUDPSocket newClient1 = new RUDPSocket(this.socket, datagramPacket.getAddress(), datagramPacket.getPort());
+                                this.clients.put(clientKey, newClient1);
+                            }
+                            break;
+                        case DATA:
+                            System.out.println("***********************\nReceived data from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            if (this.clients.containsKey(clientKey)) {
+                                this.clients.get(clientKey).receive(dataPacket);
+                                break;
+                            }
+                        default:
+                            System.out.println("***********************\nReceived unknown data/client from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            break;
+
                     }
 
-                    if(this.clients.containsKey(clientKey)) {
-                        System.out.println("Received data from client: " + clientKey + ": " + dataPacket);
-                        this.clients.get(clientKey).receive(dataPacket);
-                    }
-                    else {
-                        System.out.println("Received data from unknown client: " + clientKey + " - seqID: " + dataPacket.sequenceID);
-                    }
                 }
             } catch (IOException | ClassNotFoundException e) {
+                this.isListening.setLength(0);
+                this.isListening.append("false");
                 e.printStackTrace();
             }
         }).start();
+
     }
 
     public void send(RUDPDataPacket dataPacket, InetAddress destinationAddress, int destinationPortNumber) throws IOException {
@@ -74,23 +114,6 @@ public class RUDP implements Closeable {
         this.socket.send(datagramPacket);
     }
 
-    public boolean send(RUDPDataPacket dataPacket) throws IOException {
-//        assert this.previousDataReceivedAddress != null;
-        if(this.previousDataReceivedAddress == null) {
-            return false;
-        }
-        this.send(dataPacket, this.previousDataReceivedAddress, this.previousDataReceivedPort);
-        return true;
-    }
-
-    public RUDPDataPacket receive() throws IOException, ClassNotFoundException {
-        byte[] buffer = new byte[100000000]; // 100Mb or 95MB
-        DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
-        this.socket.receive(datagramPacket);
-        this.previousDataReceivedAddress = datagramPacket.getAddress();
-        this.previousDataReceivedPort = datagramPacket.getPort();
-        return this.convertByteArrayToObject(buffer);
-    }
 
     private byte[] convertObjectToByteArray(RUDPDataPacket dataPacket) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

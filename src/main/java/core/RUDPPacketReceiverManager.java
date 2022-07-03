@@ -9,6 +9,7 @@ public class RUDPPacketReceiverManager {
     private final BlockingQueue<RUDPDataPacket> consumerQueue;
 
     private boolean endOfData;
+    private int endOfDataSeqID = -1;
 
     public RUDPPacketReceiverManager() {
         this.packetsReceived = new ConcurrentSkipListSet<>();
@@ -19,21 +20,28 @@ public class RUDPPacketReceiverManager {
 
     /**
      * Add packet that was received from the server.
+     *
      * @param packet data packet to add to the list.
-     * @return sequence id of the packet to send as an acknowledgement id back to sender.
      */
-    public int addPacket(RUDPDataPacket packet) {
-        if(packet.data == null) this.endOfData = true;
-        this.packetsReceivedSeqID.add(packet.sequenceID);
-        this.packetsReceived.add(packet);
-        this.updateConsumerQueue();
-        return packet.sequenceID;
+    public void addPacket(RUDPDataPacket packet) {
+        if(packet.type == RUDPDataPacketType.EOD) {
+            this.endOfData = true;
+            this.endOfDataSeqID = packet.sequenceID;
+        }
+
+        if(!this.packetsReceivedSeqID.contains(packet.sequenceID)) {
+            this.packetsReceived.add(packet);
+            this.packetsReceivedSeqID.add(packet.sequenceID);
+            this.updateConsumerQueue();
+        }
+
     }
 
     private void updateConsumerQueue(){
-        if(this.endOfData) return;
-
         int pollTill = this.getNextMissingSequenceID();
+
+        if(pollTill == -2) return;
+
         while(!this.packetsReceived.isEmpty() && pollTill > this.packetsReceived.first().sequenceID)
             this.consumerQueue.offer(Objects.requireNonNull(this.packetsReceived.pollFirst()));
     }
@@ -48,25 +56,28 @@ public class RUDPPacketReceiverManager {
      * @return next sequence ID of the packet
      */
     public int getNextMissingSequenceID() {
-        if(this.endOfData) return -2;
         int prev = -1;
         for(Integer sequenceID: this.packetsReceivedSeqID){
             if(sequenceID - prev != 1)
                 return ++prev;
             prev = sequenceID;
         }
+        ++prev;
 
-        return ++prev;
+        if(this.endOfDataSeqID != -1 && prev >= this.endOfDataSeqID) return -2;
+
+        return prev;
     }
 
     public RUDPDataPacket consumePacket(TimeoutCallback timeoutCallback, long timeoutInMS) throws InterruptedException {
         this.updateConsumerQueue();
         while(true){
-            if (this.endOfData) return null;
+            // We got all the packets. Return null packet.
+            if (this.getNextMissingSequenceID() == -2) return null;
+
             RUDPDataPacket dataPacket = this.consumerQueue.poll(timeoutInMS, TimeUnit.MILLISECONDS);
-            if (dataPacket == null)
-                timeoutCallback.call();
-            else return dataPacket;
+            if (dataPacket == null && timeoutCallback != null) timeoutCallback.call();
+            if(dataPacket != null) return dataPacket;
         }
     }
 

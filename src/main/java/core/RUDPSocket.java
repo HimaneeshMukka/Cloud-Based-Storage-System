@@ -34,32 +34,67 @@ public class RUDPSocket {
         this.socket.send(datagramPacket);
     }
 
-    private synchronized void startSenderManagerTimer() {
-        if (!this.isPacketSenderManagerRunning) {
-            this.isPacketSenderManagerRunning = true;
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-                               @Override
-                               public void run() {
-                                   RUDPDataPacket dataPacket = packetSenderManager.getPacketToSend();
-
-                                   try {
-                                       System.out.println("***********************");
-                                       System.out.println("Sending data: " + dataPacket);
-                                       System.out.println("To: " + destinationAddress + ":" + destinationPortNumber);
-                                       System.out.println("***********************");
-                                       RUDPSocket.this.send(dataPacket);
-                                   } catch (IOException e) {
-                                       e.printStackTrace();
-                                   }
-                               }
-                           }
-                    , 0, 10);
-        }
+    public synchronized void retransmitPacket(RUDPDataPacket dataPacket) throws IOException {
+        final byte[] data = this.convertObjectToByteArray(dataPacket);
+        DatagramPacket datagramPacket = new DatagramPacket(data, data.length, destinationAddress, destinationPortNumber);
+        this.socket.send(datagramPacket);
     }
 
-    public synchronized void receive(RUDPDataPacket dataPacket) throws IOException, ClassNotFoundException {
+    /**
+     * The protocol we are doing is, if we don't get a `ACK` from the server, we will resend the packet.
+     * The receiver will not request a new packet.
+     * <p>
+     * It is the manager's responsibility to check if the packet has been received.
+     */
+    private synchronized void startSenderManagerTimer() {
+        if (this.isPacketSenderManagerRunning) return;
+        System.out.println("Starting packet sender manager");
+        this.isPacketSenderManagerRunning = true;
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+                           @Override
+                           public synchronized void run() {
+                               RUDPDataPacket dataPacket = packetSenderManager.getPacketToSend();
+                               if (dataPacket == null) {
+                                   System.out.println("No more packets to send: " + RUDPSocket.this.destinationAddress + ":" + RUDPSocket.this.destinationPortNumber);
+                                   isPacketSenderManagerRunning = false;
+                                   timer.cancel();
+                                   return;
+                               }
 
+                               try {
+                                   System.out.println("***********************\n" + "Sending data: " + dataPacket + "\n To: " + RUDPSocket.this.destinationAddress + ":" + RUDPSocket.this.destinationPortNumber + "\n***********************");
+                                   RUDPSocket.this.retransmitPacket(dataPacket);
+                               } catch (IOException e) {
+                                   e.printStackTrace();
+                               }
+                           }
+                       }
+                , 0, 10000);
+
+    }
+
+    /**
+     * If the dataPacket is `ACK`, forward that to the sender manager.
+     * If the dataPacket is `DATA` or `EOD`, forward that to the receiver manager.
+     *
+     * @param dataPacket Data packet to be received
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public synchronized void receive(RUDPDataPacket dataPacket) throws IOException, ClassNotFoundException {
+        // If the received packet is ACK, remove it from the sender manager
+        if (dataPacket.type == RUDPDataPacketType.ACK || dataPacket.type == RUDPDataPacketType.HANDSHAKE_ACK) {
+            this.packetSenderManager.gotAckFromReceiver(dataPacket.sequenceID);
+        }
+        else if (dataPacket.type == RUDPDataPacketType.DATA || dataPacket.type == RUDPDataPacketType.EOD) {
+            packetReceiverManager.addPacket(dataPacket);
+            // Send an ACK packet to the sender
+            this.send(new RUDPDataPacket(dataPacket.sequenceID, RUDPDataPacketType.ACK));
+        }
+        else {
+            System.out.println("Unknown packet type: " + dataPacket.type);
+        }
     }
 
     private byte[] convertObjectToByteArray(RUDPDataPacket dataPacket) throws IOException {

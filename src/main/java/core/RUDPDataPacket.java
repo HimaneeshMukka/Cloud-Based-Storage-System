@@ -6,9 +6,17 @@ public class RUDPDataPacket implements Comparable<RUDPDataPacket>, Serializable 
     int sequenceID;
     Object data;
 
+    public RUDPDataPacketType type;
+
+    public RUDPDataPacket(int sequenceID, RUDPDataPacketType type) {
+        this.sequenceID = sequenceID;
+        this.type = type;
+    }
+
     public RUDPDataPacket(int sequenceID, Object data) {
         this.data = data;
         this.sequenceID = sequenceID;
+        this.type = RUDPDataPacketType.DATA;
     }
 
     @Override
@@ -17,6 +25,7 @@ public class RUDPDataPacket implements Comparable<RUDPDataPacket>, Serializable 
     }
 
     public String toString() {
-        return "{\nSeqID: " + this.sequenceID + "\nData: " + this.data + "}\n";
+        return "{ Type: " + this.type + ", SeqID: " + this.sequenceID + ", Data: " + this.data + "}";
     }
 }
+

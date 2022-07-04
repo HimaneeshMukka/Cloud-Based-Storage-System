@@ -22,7 +22,7 @@ public class RUDP implements Closeable {
 
 
     /**
-     * Opens a UDP socket with random available port number
+     * Opens a UDP socket with random available port number. Use this for client connections
      *
      * @throws SocketException If there is an error while opening the socket
      */
@@ -171,6 +171,12 @@ public class RUDP implements Closeable {
         this.socket.send(datagramPacket);
     }
 
+    /**
+     * Connect to the server. Use this for client side communication with the server. Blocking operation.
+     * @param destinationAddress Address of the server.
+     * @param destinationPortNumber Port number of the server.
+     * @return Returns a socket object to send and receive data.
+     */
     public RUDPSocket connect(InetAddress destinationAddress, int destinationPortNumber) {
         // Send a handshake packet to the server
         if (this.clients.containsKey(destinationAddress.getHostAddress() + ":" + destinationPortNumber)) {

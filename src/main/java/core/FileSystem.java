@@ -154,4 +154,16 @@ public class FileSystem {
 
         return this.getNewVersionFiles(map);
     }
+
+    public void writeToDisk(Object data, String fileName) {
+        // Write the data to the file.
+    }
+
+    public void readFromDisk(String fileName) {
+        // Read the data from the file.
+    }
+
+    public void deleteFromDisk(String fileName) {
+        // Delete the file.
+    }
 }

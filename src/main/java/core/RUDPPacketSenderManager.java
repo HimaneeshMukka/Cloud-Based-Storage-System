@@ -34,9 +34,7 @@ public class RUDPPacketSenderManager {
      * @param sequenceID data packet's sequence ID
      */
     public void gotAckFromReceiver(int sequenceID) {
-        System.out.println("==== " + this.waitingForAck + " ====");
         if(!this.waitingForAck.containsKey(sequenceID)) return;
-        System.out.println("Got ACK from receiver for packet: " + sequenceID);
         this.waitingForAck.remove(sequenceID);
         this.timeStampsToID.remove(this.idsToTimeStamps.get(sequenceID));
         this.idsToTimeStamps.remove(sequenceID);
@@ -70,6 +68,20 @@ public class RUDPPacketSenderManager {
             this.updateTimeStamp(dataPacket);
             return dataPacket;
         }
+        return null;
+    }
+
+    public RUDPDataPacket getPacket(int sequenceID) {
+        if(this.waitingForAck.containsKey(sequenceID))
+            return this.waitingForAck.get(sequenceID);
+        else {
+            for(RUDPDataPacket packet: this.packetList) {
+                if(packet.sequenceID == sequenceID)
+                    return packet;
+            }
+        }
+
+        System.out.println("Packet not found: " + sequenceID);
         return null;
     }
 

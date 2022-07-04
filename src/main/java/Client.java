@@ -11,12 +11,26 @@ import static java.lang.Thread.sleep;
 public class Client {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         RUDP client = new RUDP();
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        String s;
         RUDPSocket socket = client.connect(InetAddress.getLocalHost(), 5000);
-        for(int i = 0; i < 10; i++){
-            RUDPDataPacket data = new RUDPDataPacket(i, "Test from client : " + i);
+        System.out.println("Enter packet number: ");
+        int packetNumber = 0;
+        while (!(s = br.readLine()).equals("-1")) {
+            packetNumber = Integer.parseInt(s);
+            RUDPDataPacket data = new RUDPDataPacket(packetNumber, "Test from client : " + packetNumber);
             socket.send(data);
-            sleep(10000);
+            System.out.println("Enter packet number: ");
         }
+        socket.send(new RUDPDataPacket(++packetNumber, RUDPDataPacketType.EOD));
+        while (!(s = br.readLine()).equals("-1")) {
+            packetNumber = Integer.parseInt(s);
+            RUDPDataPacket data = new RUDPDataPacket(packetNumber, "Test from client : " + packetNumber);
+            socket.send(data);
+            System.out.println("Enter packet number: ");
+        }
+        socket.send(new RUDPDataPacket(++packetNumber, RUDPDataPacketType.EOD));
 //        data = client.receive();
 //        System.out.println("Received data from server: " + data);
     }

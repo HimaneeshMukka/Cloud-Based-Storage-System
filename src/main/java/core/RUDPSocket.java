@@ -14,6 +14,7 @@ public class RUDPSocket {
     private final RUDPPacketSenderManager packetSenderManager;
     private boolean isPacketSenderManagerRunning;
     private final RUDPPacketReceiverManager packetReceiverManager;
+    public final String clientKey;
 
     public RUDPSocket(DatagramSocket socket, InetAddress destinationAddress, int destinationPortNumber) {
         this.socket = socket;
@@ -21,6 +22,7 @@ public class RUDPSocket {
         this.destinationPortNumber = destinationPortNumber;
         this.packetSenderManager = new RUDPPacketSenderManager();
         this.packetReceiverManager = new RUDPPacketReceiverManager();
+        this.clientKey = destinationAddress.getHostAddress() + ":" + destinationPortNumber;
         this.isPacketSenderManagerRunning = false;
     }
 
@@ -38,6 +40,10 @@ public class RUDPSocket {
         final byte[] data = this.convertObjectToByteArray(dataPacket);
         DatagramPacket datagramPacket = new DatagramPacket(data, data.length, destinationAddress, destinationPortNumber);
         this.socket.send(datagramPacket);
+    }
+
+    public synchronized void retransmitPacket(int sequenceID) throws IOException {
+        this.retransmitPacket(this.packetSenderManager.getPacket(sequenceID));
     }
 
     public void sendAck(RUDPDataPacket dataPacket) throws IOException {
@@ -96,9 +102,25 @@ public class RUDPSocket {
             // Send an ACK packet to the sender
             this.sendAck(new RUDPDataPacket(dataPacket.sequenceID, RUDPDataPacketType.ACK));
         }
+        else if (dataPacket.type == RUDPDataPacketType.NAK) {
+            this.retransmitPacket(dataPacket.sequenceID);
+        }
         else {
             System.out.println("Unknown packet type: " + dataPacket.type);
         }
+    }
+
+    public RUDPDataPacket consume() throws InterruptedException {
+        return packetReceiverManager.consumePacket(() -> {
+            int nextSequence = RUDPSocket.this.packetReceiverManager.getNextMissingSequenceID();
+            RUDPDataPacket dataPacket = new RUDPDataPacket(nextSequence, RUDPDataPacketType.NAK);
+            try {
+                RUDPSocket.this.sendAck(dataPacket);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }, 5000);
     }
 
     private byte[] convertObjectToByteArray(RUDPDataPacket dataPacket) throws IOException {

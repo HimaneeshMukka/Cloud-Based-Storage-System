@@ -1,5 +1,6 @@
 import core.RUDP;
 import core.RUDPDataPacket;
+import core.RUDPDataPacketType;
 
 import java.io.*;
 
@@ -7,7 +8,18 @@ import static java.lang.Thread.sleep;
 
 public class Server {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        RUDP server = new RUDP(5000);
+        RUDP server = new RUDP(5000, (socket) -> {
+            System.out.println("New connection opened: " + socket.clientKey);
+            RUDPDataPacket dataPacket = null;
+            while(true) {
+                dataPacket = socket.consume();
+                System.out.println("Consumed data packet: " + dataPacket);
+                if (dataPacket== null) {
+                    sleep(100);
+                }
+            }
+        });
+        server.debug = false;
         server.listen();
 
         // Sender

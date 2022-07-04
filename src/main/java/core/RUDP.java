@@ -14,9 +14,11 @@ public class RUDP implements Closeable {
     private InetAddress previousDataReceivedAddress;
     private int previousDataReceivedPort;
     private final DatagramSocket socket;
+    public boolean debug = false;
 
     private final ConcurrentMap<String, RUDPSocket> clients = new ConcurrentHashMap<>();
     private final StringBuilder isListening = new StringBuilder("false");
+    private NewConnectionCallBack newConnectionCallBack = null;
 
 
     /**
@@ -35,8 +37,9 @@ public class RUDP implements Closeable {
      * @param portNumber UDP socket port number
      * @throws SocketException If there is an error while opening the socket
      */
-    public RUDP(int portNumber) throws SocketException {
+    public RUDP(int portNumber, NewConnectionCallBack newConnectionCallBack) throws SocketException {
         this.socket = new DatagramSocket(portNumber);
+        this.newConnectionCallBack = newConnectionCallBack;
         this.listen();
     }
 
@@ -45,16 +48,16 @@ public class RUDP implements Closeable {
 
         // Idempotent operation (if already listening, do nothing)
         if (Boolean.parseBoolean(this.isListening.toString())) {
-            System.out.println("Already listening");
+            if (this.debug) System.out.println("Already listening");
             return;
         }
         this.isListening.setLength(0);
         this.isListening.append("true");
-        System.out.println("Listening");
+        if (this.debug) System.out.println("Listening");
         new Thread(() -> {
             try {
                 while (true) {
-                    System.out.println("\n\nWaiting for data...");
+                    if (this.debug) System.out.println("\n\nWaiting for data...");
                     byte[] buffer = new byte[100000000]; // 100Mb or 95MB
                     DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
                     this.socket.receive(datagramPacket);
@@ -62,22 +65,32 @@ public class RUDP implements Closeable {
 
                     String clientKey = datagramPacket.getAddress().getHostAddress() + ":" + datagramPacket.getPort();
 
-                    if(dataPacket == null) {
-                        System.out.println("Received null packet from: " + clientKey);
+                    if (dataPacket == null) {
+                        if (this.debug) System.out.println("Received null packet from: " + clientKey);
                         continue;
                     }
                     switch (dataPacket.type) {
                         case HANDSHAKE:
-                            System.out.println("***********************\nReceived handshake from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            if (this.debug)
+                                System.out.println("***********************\nReceived handshake from: " + clientKey + "\n" + dataPacket + "\n***********************");
                             RUDPSocket newClient = new RUDPSocket(this.socket, datagramPacket.getAddress(), datagramPacket.getPort());
                             this.clients.put(clientKey, newClient);
                             RUDPDataPacket handshakeACK = new RUDPDataPacket(dataPacket.sequenceID, RUDPDataPacketType.HANDSHAKE_ACK);
-                            newClient.send(handshakeACK);
-                            // Remove it from waitingForACKS map immediately after sending the ACK
-                            newClient.receive(handshakeACK);
+                            newClient.sendAck(handshakeACK);
+
+                            if (this.newConnectionCallBack != null) {
+                                new Thread(() -> {
+                                    try {
+                                        this.newConnectionCallBack.onNewConnection(newClient);
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }).start();
+                            }
                             break;
                         case HANDSHAKE_ACK:
-                            System.out.println("***********************\nReceived handshake_ack from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            if (this.debug)
+                                System.out.println("***********************\nReceived handshake_ack from: " + clientKey + "\n" + dataPacket + "\n***********************");
                             // This means we have already created a client, and now we remove it from the waitingForACKS map
                             if (this.clients.containsKey(clientKey)) {
                                 this.clients.get(clientKey).receive(dataPacket);
@@ -86,28 +99,64 @@ public class RUDP implements Closeable {
                             else {
                                 RUDPSocket newClient1 = new RUDPSocket(this.socket, datagramPacket.getAddress(), datagramPacket.getPort());
                                 this.clients.put(clientKey, newClient1);
+                                if (this.newConnectionCallBack != null) {
+                                    new Thread(() -> {
+                                        try {
+                                            this.newConnectionCallBack.onNewConnection(newClient1);
+                                        } catch (InterruptedException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }).start();
+                                }
                             }
                             break;
                         case ACK:
-                            System.out.println("***********************\nReceived ack from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            if (this.clients.containsKey(clientKey)) {
+                                if (this.debug)
+                                    System.out.println("***********************\nReceived ack from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                                this.clients.get(clientKey).receive(dataPacket);
+                            }
+                            else {
+                                if (this.debug) System.out.println("Received ack from unknown client: " + clientKey);
+                            }
+                            break;
+                        case NAK:
+                            if (this.clients.containsKey(clientKey)) {
+                                if (this.debug)
+                                    System.out.println("***********************\nReceived nak from: " + clientKey + "\n" + dataPacket + "\n***********************");
+
+                                this.clients.get(clientKey).receive(dataPacket);
+                                this.clients.get(clientKey).retransmitPacket(dataPacket.sequenceID);
+
+                            }
+                            else {
+                                if (this.debug) System.out.println("Received nak from unknown client: " + clientKey);
+                            }
+                            break;
+                        case EOD:
+                            if(this.debug) System.out.println("***********************\nReceived eod from: " + clientKey + "\n" + dataPacket + "\n***********************");
                             if (this.clients.containsKey(clientKey)) {
                                 this.clients.get(clientKey).receive(dataPacket);
                             }
-                            break;
+                            else {
+                                if (this.debug) System.out.println("Received eod from unknown client: " + clientKey);
+                            }
                         case DATA:
-                            System.out.println("***********************\nReceived data from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            if (this.debug)
+                                System.out.println("***********************\nReceived data from: " + clientKey + "\n" + dataPacket + "\n***********************");
                             if (this.clients.containsKey(clientKey)) {
                                 this.clients.get(clientKey).receive(dataPacket);
                                 break;
                             }
                         default:
-                            System.out.println("***********************\nReceived unknown data/client from: " + clientKey + "\n" + dataPacket + "\n***********************");
+                            if (this.debug)
+                                System.out.println("***********************\nReceived unknown data/client from: " + clientKey + "\n" + dataPacket + "\n***********************");
                             break;
 
                     }
 
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (Exception e) {
                 this.isListening.setLength(0);
                 this.isListening.append("false");
                 e.printStackTrace();
@@ -124,13 +173,19 @@ public class RUDP implements Closeable {
 
     public RUDPSocket connect(InetAddress destinationAddress, int destinationPortNumber) {
         // Send a handshake packet to the server
+        if (this.clients.containsKey(destinationAddress.getHostAddress() + ":" + destinationPortNumber)) {
+            if (this.debug)
+                System.out.println("Already connected to: " + destinationAddress.getHostAddress() + ":" + destinationPortNumber);
+            return this.clients.get(destinationAddress.getHostAddress() + ":" + destinationPortNumber);
+        }
         RUDPDataPacket handshake = new RUDPDataPacket(0, RUDPDataPacketType.HANDSHAKE);
         String clientKey = destinationAddress.getHostAddress() + ":" + destinationPortNumber;
         int numberOfAttempts = 1;
-        while(!this.clients.containsKey(clientKey)) {
+        while (!this.clients.containsKey(clientKey)) {
             try {
                 this.send(handshake, destinationAddress, destinationPortNumber);
-                System.out.println("Sent handshake to: " + clientKey + " Attempt: " + numberOfAttempts++);
+                if (this.debug)
+                    System.out.println("Sent handshake to: " + clientKey + " Attempt: " + numberOfAttempts++);
                 // Wait for handshake_ack from the server
                 synchronized (this) {
                     this.wait(5000);
@@ -141,6 +196,14 @@ public class RUDP implements Closeable {
         }
 
         return this.clients.get(clientKey);
+    }
+
+    public RUDPSocket getClient(InetAddress destinationAddress, int destinationPortNumber) {
+        return this.clients.get(destinationAddress.getHostAddress() + ":" + destinationPortNumber);
+    }
+
+    public ConcurrentMap<String, RUDPSocket> getClients() {
+        return this.clients;
     }
 
 

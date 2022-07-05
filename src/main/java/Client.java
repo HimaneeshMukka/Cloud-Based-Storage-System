@@ -1,11 +1,8 @@
-import core.FileSystem;
-import core.RUDP;
-import core.RUDPDataPacket;
-import core.RUDPDataPacketType;
-import core.RUDPSocket;
+import core.*;
 
 import java.io.*;
 import java.net.*;
+import java.util.List;
 
 import static java.lang.Thread.sleep;
 
@@ -22,16 +19,8 @@ public class Client {
     public static void firstSync(RUDPSocket socket) throws IOException, InterruptedException {
         System.out.println("Sending first sync...");
         fs.reloadCachedFiles();
-        socket.send(new RUDPDataPacket(0, fs.getCachedFiles()));
-        socket.send(new RUDPDataPacket(1, RUDPDataPacketType.EOD));
-        socket.send(new RUDPDataPacket(3, fs.getCachedFiles()));
-        socket.send(new RUDPDataPacket(2, fs.getCachedFiles()));
-        sleep(10000);
-        socket.send(new RUDPDataPacket(5, RUDPDataPacketType.EOD));
-        socket.send(new RUDPDataPacket(4, fs.getCachedFiles()));
-        sleep(10000);
-        socket.send(new RUDPDataPacket(6, fs.getCachedFiles()));
-        socket.send(new RUDPDataPacket(7, RUDPDataPacketType.EOD));
+        socket.send(new RUDPDataPacket(0, fs.getCachedFiles(), ObjectType.LIST_FILEMETA));
+        socket.send(new RUDPDataPacket(1, RUDPDataPacketType.EOD, ObjectType.LIST_FILEMETA));
         System.out.println("Sent first sync.");
     }
 }

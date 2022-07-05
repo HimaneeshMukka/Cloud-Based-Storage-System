@@ -3,19 +3,27 @@ package core;
 import java.io.Serializable;
 
 public class RUDPDataPacket implements Comparable<RUDPDataPacket>, Serializable {
-    int sequenceID;
-    Object data;
+    public int sequenceID;
+    public Object data;
 
     public RUDPDataPacketType type;
+    public ObjectType objectType;
+
+    public RUDPDataPacket(int sequenceID, RUDPDataPacketType type, ObjectType objectType) {
+        this.sequenceID = sequenceID;
+        this.objectType = objectType;
+        this.type = type;
+    }
 
     public RUDPDataPacket(int sequenceID, RUDPDataPacketType type) {
         this.sequenceID = sequenceID;
         this.type = type;
     }
 
-    public RUDPDataPacket(int sequenceID, Object data) {
+    public RUDPDataPacket(int sequenceID, Object data, ObjectType objectType) {
         this.data = data;
         this.sequenceID = sequenceID;
+        this.objectType = objectType;
         this.type = RUDPDataPacketType.DATA;
     }
 
@@ -25,7 +33,7 @@ public class RUDPDataPacket implements Comparable<RUDPDataPacket>, Serializable 
     }
 
     public String toString() {
-        return "{ Type: " + this.type + ", SeqID: " + this.sequenceID + ", Data: " + this.data + "}";
+        return "{ Type: " + this.type + ", SeqID: " + this.sequenceID + ", ObjectType: " + this.objectType + ", Data: " + this.data + "}";
     }
 }
 

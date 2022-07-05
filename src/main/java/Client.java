@@ -12,6 +12,10 @@ public class Client {
         RUDP client = new RUDP();
         RUDPSocket socket = client.connect(InetAddress.getLocalHost(), 5000);
         firstSync(socket);
+        while(true) {
+            List<RUDPDataPacket> packets = socket.consumeAllPackets();
+            System.out.println("Received " + packets.size() + " packets. -> " + packets);
+        }
 //        data = client.receive();
 //        System.out.println("Received data from server: " + data);
     }

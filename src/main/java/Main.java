@@ -1,7 +1,10 @@
 import core.FileSystem;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static java.lang.Thread.sleep;
 
 public class Main {
     public static void main(String[] args) {
@@ -16,5 +19,6 @@ public class Main {
                 fs.reloadCachedFiles();
             }
         }, 0, 10000);
+
     }
 }

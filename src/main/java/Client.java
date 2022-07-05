@@ -1,3 +1,4 @@
+import core.FileSystem;
 import core.RUDP;
 import core.RUDPDataPacket;
 import core.RUDPDataPacketType;
@@ -9,29 +10,28 @@ import java.net.*;
 import static java.lang.Thread.sleep;
 
 public class Client {
+    static FileSystem fs = new FileSystem("/Users/skreweverything/client1/");
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         RUDP client = new RUDP();
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-        String s;
         RUDPSocket socket = client.connect(InetAddress.getLocalHost(), 5000);
-        System.out.println("Enter packet number: ");
-        int packetNumber = 0;
-        while (!(s = br.readLine()).equals("-1")) {
-            packetNumber = Integer.parseInt(s);
-            RUDPDataPacket data = new RUDPDataPacket(packetNumber, "Test from client : " + packetNumber);
-            socket.send(data);
-            System.out.println("Enter packet number: ");
-        }
-        socket.send(new RUDPDataPacket(++packetNumber, RUDPDataPacketType.EOD));
-        while (!(s = br.readLine()).equals("-1")) {
-            packetNumber = Integer.parseInt(s);
-            RUDPDataPacket data = new RUDPDataPacket(packetNumber, "Test from client : " + packetNumber);
-            socket.send(data);
-            System.out.println("Enter packet number: ");
-        }
-        socket.send(new RUDPDataPacket(++packetNumber, RUDPDataPacketType.EOD));
+        firstSync(socket);
 //        data = client.receive();
 //        System.out.println("Received data from server: " + data);
+    }
+
+    public static void firstSync(RUDPSocket socket) throws IOException, InterruptedException {
+        System.out.println("Sending first sync...");
+        fs.reloadCachedFiles();
+        socket.send(new RUDPDataPacket(0, fs.getCachedFiles()));
+        socket.send(new RUDPDataPacket(1, RUDPDataPacketType.EOD));
+        socket.send(new RUDPDataPacket(3, fs.getCachedFiles()));
+        socket.send(new RUDPDataPacket(2, fs.getCachedFiles()));
+        sleep(10000);
+        socket.send(new RUDPDataPacket(5, RUDPDataPacketType.EOD));
+        socket.send(new RUDPDataPacket(4, fs.getCachedFiles()));
+        sleep(10000);
+        socket.send(new RUDPDataPacket(6, fs.getCachedFiles()));
+        socket.send(new RUDPDataPacket(7, RUDPDataPacketType.EOD));
+        System.out.println("Sent first sync.");
     }
 }

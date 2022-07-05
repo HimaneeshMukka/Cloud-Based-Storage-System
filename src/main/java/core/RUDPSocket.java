@@ -4,8 +4,12 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static java.lang.Thread.sleep;
 
 public class RUDPSocket {
     public final InetAddress destinationAddress;
@@ -29,20 +33,20 @@ public class RUDPSocket {
     public synchronized void send(RUDPDataPacket dataPacket) throws IOException {
         packetSenderManager.addPacket(dataPacket);
         // Start the sender manager for the destination if it doesn't exist
-        this.startSenderManagerTimer();
+        if (!this.isPacketSenderManagerRunning) this.startSenderManagerTimer();
 
         final byte[] data = this.convertObjectToByteArray(dataPacket);
         DatagramPacket datagramPacket = new DatagramPacket(data, data.length, destinationAddress, destinationPortNumber);
         this.socket.send(datagramPacket);
     }
 
-    public synchronized void retransmitPacket(RUDPDataPacket dataPacket) throws IOException {
+    public void retransmitPacket(RUDPDataPacket dataPacket) throws IOException {
         final byte[] data = this.convertObjectToByteArray(dataPacket);
         DatagramPacket datagramPacket = new DatagramPacket(data, data.length, destinationAddress, destinationPortNumber);
         this.socket.send(datagramPacket);
     }
 
-    public synchronized void retransmitPacket(int sequenceID) throws IOException {
+    public void retransmitPacket(int sequenceID) throws IOException {
         this.retransmitPacket(this.packetSenderManager.getPacket(sequenceID));
     }
 
@@ -56,8 +60,7 @@ public class RUDPSocket {
      * <p>
      * It is the manager's responsibility to check if the packet has been received.
      */
-    private synchronized void startSenderManagerTimer() {
-        if (this.isPacketSenderManagerRunning) return;
+    private void startSenderManagerTimer() {
         System.out.println("Starting packet sender manager");
         this.isPacketSenderManagerRunning = true;
         Timer timer = new Timer();
@@ -73,14 +76,14 @@ public class RUDPSocket {
                                }
 
                                try {
-                                   System.out.println("***********************\n" + "Sending data: " + dataPacket + "\n To: " + RUDPSocket.this.destinationAddress + ":" + RUDPSocket.this.destinationPortNumber + "\n***********************");
+                                   System.out.println("***********************\n" + "ReSending data: " + dataPacket + "\n To: " + RUDPSocket.this.destinationAddress + ":" + RUDPSocket.this.destinationPortNumber + "\n***********************");
                                    RUDPSocket.this.retransmitPacket(dataPacket);
                                } catch (IOException e) {
                                    e.printStackTrace();
                                }
                            }
                        }
-                , 0, 10000);
+                , 0, 10);
 
     }
 
@@ -92,7 +95,7 @@ public class RUDPSocket {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public synchronized void receive(RUDPDataPacket dataPacket) throws IOException, ClassNotFoundException {
+    public void receive(RUDPDataPacket dataPacket) throws IOException, ClassNotFoundException {
         // If the received packet is ACK, remove it from the sender manager
         if (dataPacket.type == RUDPDataPacketType.ACK || dataPacket.type == RUDPDataPacketType.HANDSHAKE_ACK) {
             this.packetSenderManager.gotAckFromReceiver(dataPacket.sequenceID);
@@ -122,6 +125,32 @@ public class RUDPSocket {
 
         }, 5000);
     }
+
+    /**
+     * Get a list of packets that belong to same data stream.
+     * @return
+     * @throws InterruptedException
+     */
+    public List<RUDPDataPacket> consumeAllPackets() throws InterruptedException {
+        RUDPDataPacket dataPacket = null;
+        List<RUDPDataPacket> dataPacketList = new ArrayList<>();
+        while (true) {
+            dataPacket = this.consume();
+//                    System.out.println("Consumed data packet: " + dataPacket);
+            if (dataPacket == null) {
+                sleep(100);
+                continue;
+            }
+            if (dataPacket.type == RUDPDataPacketType.EOD) {
+                break;
+            }
+            dataPacketList.add(dataPacket);
+        }
+
+//        if (dataPacketList.size() > 0)
+            return dataPacketList;
+    }
+
 
     private byte[] convertObjectToByteArray(RUDPDataPacket dataPacket) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

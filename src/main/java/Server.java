@@ -3,6 +3,8 @@ import core.RUDPDataPacket;
 import core.RUDPDataPacketType;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Thread.sleep;
 
@@ -10,14 +12,11 @@ public class Server {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         RUDP server = new RUDP(5000, (socket) -> {
             System.out.println("New connection opened: " + socket.clientKey);
-            RUDPDataPacket dataPacket = null;
             while(true) {
-                dataPacket = socket.consume();
-                System.out.println("Consumed data packet: " + dataPacket);
-                if (dataPacket== null) {
-                    sleep(100);
-                }
+                List<RUDPDataPacket> packets = socket.consumeAllPackets();
+                System.out.println("Received " + packets.size() + " packets. -> " + packets);
             }
+
         });
         server.debug = false;
         server.listen();

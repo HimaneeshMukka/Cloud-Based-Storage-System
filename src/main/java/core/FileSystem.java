@@ -6,9 +6,13 @@
  */
 package core;
 
-import java.io.File;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.lang.Thread.sleep;
 
 public class FileSystem {
     final String directoryPath;
@@ -23,7 +27,7 @@ public class FileSystem {
      * Invalidates the cache and fetches new list from the file system.
      * This has to be called explicitly to update the cache of stored files.
      */
-    public void reloadCachedFiles() {
+    public synchronized void reloadCachedFiles() {
         this.cachedFiles = new ConcurrentHashMap<>();
 
         for(FileMeta s: this.listFiles())
@@ -155,15 +159,25 @@ public class FileSystem {
         return this.getNewVersionFiles(map);
     }
 
-    public void writeToDisk(Object data, String fileName) {
+    public synchronized void writeToDisk(byte[] data, String fileName) throws IOException {
         // Write the data to the file.
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(this.directoryPath + "/" + fileName));
+        bos.write(data);
+        bos.flush();
+        bos.close();
     }
 
-    public void readFromDisk(String fileName) {
+    public synchronized byte[] readFromDisk(String fileName) throws IOException {
         // Read the data from the file.
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(this.directoryPath + "/" + fileName));
+        byte[] data = bis.readAllBytes();
+        bis.close();
+        return data;
     }
 
-    public void deleteFromDisk(String fileName) {
+    public synchronized void deleteFromDisk(String fileName) {
         // Delete the file.
+        File file = new File(this.directoryPath + "/" + fileName);
+        file.delete();
     }
 }

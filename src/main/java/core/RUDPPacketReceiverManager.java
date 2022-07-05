@@ -29,7 +29,9 @@ public class RUDPPacketReceiverManager {
             this.endOfDataSeqID = packet.sequenceID;
         }
 
+
         if(!this.packetsReceivedSeqID.contains(packet.sequenceID)) {
+//        System.out.println("Received packet with sequence ID: " + packet.sequenceID + " and: " + packet);
             if(this.endOfData && this.endOfDataSeqID < packet.sequenceID) {
                 this.endOfData = false;
                 this.endOfDataSeqID = -1;
@@ -44,7 +46,10 @@ public class RUDPPacketReceiverManager {
     private void updateConsumerQueue(){
         int pollTill = this.getNextMissingSequenceID();
 
-        if(pollTill == -2) return;
+        if(pollTill == -2) {
+            while(!this.packetsReceived.isEmpty())
+                this.consumerQueue.offer(Objects.requireNonNull(this.packetsReceived.pollFirst()));
+        }
 
         while(!this.packetsReceived.isEmpty() && pollTill > this.packetsReceived.first().sequenceID)
             this.consumerQueue.offer(Objects.requireNonNull(this.packetsReceived.pollFirst()));
@@ -67,9 +72,10 @@ public class RUDPPacketReceiverManager {
             prev = sequenceID;
         }
         ++prev;
-
+//        System.out.println("Packets sequence IDs: " + this.packetsReceivedSeqID + " and prev: " + prev);
 //        System.out.println("Missing packet: " + prev + " EOD: " + this.endOfDataSeqID);
-        if(this.endOfDataSeqID != -1 && prev >= this.endOfDataSeqID) return -2;
+        if(this.endOfDataSeqID != -1 && prev >= this.endOfDataSeqID)
+            return -2;
 
         return prev;
     }
@@ -78,7 +84,8 @@ public class RUDPPacketReceiverManager {
         this.updateConsumerQueue();
         while(true){
             // We got all the packets. Return null packet.
-            if (this.getNextMissingSequenceID() == -2) return null;
+//            System.out.println("ConsumePacket Method: " + this.consumerQueue.size());
+            if (this.consumerQueue.size() == 0 && this.getNextMissingSequenceID() == -2) return null;
 
             RUDPDataPacket dataPacket = this.consumerQueue.poll(timeoutInMS, TimeUnit.MILLISECONDS);
             if (dataPacket == null && timeoutCallback != null && !this.packetsReceivedSeqID.isEmpty()) timeoutCallback.call();

@@ -82,7 +82,7 @@ public class RUDP implements Closeable {
                                 new Thread(() -> {
                                     try {
                                         this.newConnectionCallBack.onNewConnection(newClient);
-                                    } catch (InterruptedException e) {
+                                    } catch (InterruptedException | IOException e) {
                                         throw new RuntimeException(e);
                                     }
                                 }).start();
@@ -103,7 +103,7 @@ public class RUDP implements Closeable {
                                     new Thread(() -> {
                                         try {
                                             this.newConnectionCallBack.onNewConnection(newClient1);
-                                        } catch (InterruptedException e) {
+                                        } catch (InterruptedException | IOException e) {
                                             throw new RuntimeException(e);
                                         }
                                     }).start();

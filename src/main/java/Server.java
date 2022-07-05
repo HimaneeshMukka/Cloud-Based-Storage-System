@@ -60,15 +60,55 @@ public class Server {
 
     public static void processFileMeta(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
         fs.reloadCachedFiles();
-        List<FileMeta> filesWeNeedFromClient = fs.getNewVersionFiles((List<FileMeta>) dataPacketList.get(0).data);
+        List<FileMeta> fromOther = (List<FileMeta>) dataPacketList.get(0).data;
+        List<FileMeta> newVersionFiles = fs.getNewVersionFiles(fromOther);
+        List<FileMeta> filesWeNeedFromClient = fromOther.stream().filter(f -> {
+            for(FileMeta fm : newVersionFiles) {
+                if(fm.name.equals(f.name)) {
+                    return false;
+                }
+            }
+            return true;
+        }).toList();
+
+        System.out.println("FileMeta we got from client: " + fromOther);
+        System.out.println("FileMeta we need from client: " + filesWeNeedFromClient);
+        System.out.println("FileMeta we have: " + fs.getCachedFiles());
+        System.out.println("Files we need to send: " + newVersionFiles);
+
         if(filesWeNeedFromClient.size() > 0) {
             System.out.println("We need to request: " + filesWeNeedFromClient);
             socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), filesWeNeedFromClient, ObjectType.LIST_FILEMETA_NEEDED));
             socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), RUDPDataPacketType.EOD, ObjectType.LIST_FILEMETA_NEEDED));
         }
         else {
-            System.out.println("No files to send.");
+            System.out.println("We don't need any files from client.");
         }
 
+        if(newVersionFiles.size() > 0) {
+            System.out.println("We need to send: " + newVersionFiles);
+            sendFiles(newVersionFiles, socket);
+        }
+        else {
+            System.out.println("We don't need to send any files to client.");
+        }
+
+
+    }
+
+    public static void sendFiles(List<FileMeta> files, RUDPSocket socket) throws IOException {
+        for(FileMeta f : files) {
+            byte[] data = fs.readFromDisk(f.name);
+            List<FileData> fileDataList = FileData.splitDataAndGetPackets(data, 4096, f);
+            synchronized (sequenceNumberMap.get(socket.clientKey)) {
+                if(fileDataList.isEmpty()){
+                    socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), new FileData(f, null), ObjectType.FILE_DATA));
+                }
+                for(FileData fd : fileDataList) {
+                    socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), fd, ObjectType.FILE_DATA));
+                }
+                socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), RUDPDataPacketType.EOD, ObjectType.FILE_DATA));
+            }
+        }
     }
 }

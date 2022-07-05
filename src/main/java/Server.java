@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.lang.Thread.sleep;
 
 public class Server {
     static FileSystem fs = new FileSystem("/Users/skreweverything/server/");
@@ -24,27 +23,6 @@ public class Server {
 
         });
         server.debug = false;
-        server.listen();
-
-        // Sender
-//        new Thread(() -> {
-//            try {
-//                int sequenceNumber = 1;
-//                while (true) {
-//                    System.out.println("Sending data..." + sequenceNumber);
-//                    boolean flag = server.send(new RUDPDataPacket(sequenceNumber, "Test from server"));
-//                    System.out.println("Sent? " + flag);
-//                    if(flag){
-//                        System.out.println("Sent data to client: " + sequenceNumber);
-//                        sequenceNumber++;
-//                    }
-//                    else System.out.println("Failed to send data: " + sequenceNumber);
-//                    sleep(10000);
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }).start();
     }
 
     public static void processList(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
@@ -52,6 +30,13 @@ public class Server {
         if(type == ObjectType.LIST_FILEMETA) {
             // In this we get a list of FileMeta data, and we need to decide which files we need from client.
             processFileMeta(dataPacketList, socket);
+        }
+        else if (type ==ObjectType.LIST_FILEMETA_NEEDED) {
+            sendFiles((List<FileMeta>) dataPacketList.get(0).data, socket);
+        }
+        else if (type == ObjectType.FILE_DATA) {
+            // In this we get a file data, and we need to save it to the file system.
+            processFileData(dataPacketList, socket);
         }
         else {
             System.out.println("Unknown object type: " + type + ", Type: " + dataPacketList.get(0).type);
@@ -102,7 +87,7 @@ public class Server {
             List<FileData> fileDataList = FileData.splitDataAndGetPackets(data, 4096, f);
             synchronized (sequenceNumberMap.get(socket.clientKey)) {
                 if(fileDataList.isEmpty()){
-                    socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), new FileData(f, null), ObjectType.FILE_DATA));
+                    socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), new FileData(f, data), ObjectType.FILE_DATA));
                 }
                 for(FileData fd : fileDataList) {
                     socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), fd, ObjectType.FILE_DATA));
@@ -110,5 +95,14 @@ public class Server {
                 socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), RUDPDataPacketType.EOD, ObjectType.FILE_DATA));
             }
         }
+    }
+
+    public static void processFileData(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
+        List<FileData> fileDataList = new ArrayList<>();
+        for(RUDPDataPacket p : dataPacketList) {
+            fileDataList.add((FileData) p.data);
+        }
+        FileData fileData = FileData.combinePackets(fileDataList);
+        fs.writeToDisk(fileData.data, fileData.fileMeta.name);
     }
 }

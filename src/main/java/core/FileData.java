@@ -28,4 +28,18 @@ public class FileData implements Serializable {
         }
         return packets;
     }
+
+    public static FileData combinePackets(List<FileData> packets) {
+        int totalSize = 0;
+        for (FileData packet : packets) {
+            totalSize += packet.data.length;
+        }
+        byte[] data = new byte[totalSize];
+        int offset = 0;
+        for (FileData packet : packets) {
+            System.arraycopy(packet.data, 0, data, offset, packet.data.length);
+            offset += packet.data.length;
+        }
+        return new FileData(packets.get(0).fileMeta, data);
+    }
 }

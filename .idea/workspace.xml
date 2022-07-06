@@ -8,9 +8,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Client.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/FileMeta.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/FileMeta.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/FileSystem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/FileSystem.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/core/RUDPSocket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/core/RUDPSocket.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +97,7 @@
       <updated>1656626255090</updated>
       <workItem from="1656626256799" duration="5567000" />
       <workItem from="1656715827793" duration="112802000" />
-      <workItem from="1657002528650" duration="21613000" />
+      <workItem from="1657002528650" duration="23909000" />
     </task>
     <task id="LOCAL-00001" summary="WIP">
       <created>1656742608708</created>
@@ -186,7 +183,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657025246126</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="WIP">
+      <created>1657094276245</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1657094276246</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -82,21 +82,34 @@ public class Client {
     public static void processReceivedFileMeta(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
         fs.reloadCachedFiles();
         List<FileMeta> fromOther = (List<FileMeta>) dataPacketList.get(0).data;
-        List<FileMeta> newVersionFiles = fs.getNewVersionFiles(fromOther);
+        List<FileMeta> fromUs = fs.getCachedFiles();
+        List<FileMeta> filesWeWant = fromOther.stream().filter(f -> {
+            for (FileMeta f2 : fromUs) {
+                if (f.name.equals(f2.name)) {
+                    return f.lastModifiedEpoch > f2.lastModifiedEpoch;
+                }
+            }
+            return true;
+        }).toList();
 
         System.out.println("FileMeta we got from client: " + fromOther);
-        System.out.println("FileMeta we have: " + fs.getCachedFiles());
+        System.out.println("FileMeta we have: " + fromUs);
 //        System.out.println("Files we need to send: " + newVersionFiles);
 
-        if(newVersionFiles.size() > 0) {
-            System.out.println("We need to send: " + newVersionFiles);
-            sendFiles(newVersionFiles, socket);
+        if (filesWeWant.size() > 0) {
+            System.out.println("We need this files: " + filesWeWant);
+            sendListOfFilesNeeded(filesWeWant, socket);
         }
         else {
-//            System.out.println("We don't need to send any files to client.");
+            System.out.println("We don't need any files from client.");
         }
 
 
+    }
+
+    public static void sendListOfFilesNeeded(List<FileMeta> files, RUDPSocket socket) throws IOException {
+        socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), files, ObjectType.LIST_FILEMETA_NEEDED));
+        socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), RUDPDataPacketType.EOD, ObjectType.LIST_FILEMETA_NEEDED));
     }
 
     public static void sendFiles(List<FileMeta> files, RUDPSocket socket) throws IOException {

@@ -58,7 +58,7 @@ public class FileMeta implements Comparable<FileMeta>, Serializable {
 
     @Override
     public String toString() {
-        return this.name + "\t\t" + this.length + "B" + "\t\t" + this.lastModifiedDate;
+        return this.name + "\t\t" + this.length + "B" + "\t\t" + this.lastModifiedDate + "\t\t" + this.lastModifiedEpoch;
     }
 
 }

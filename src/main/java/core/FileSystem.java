@@ -159,12 +159,14 @@ public class FileSystem {
         return this.getNewVersionFiles(map);
     }
 
-    public synchronized void writeToDisk(byte[] data, String fileName) throws IOException {
+    public synchronized void writeToDisk(byte[] data, FileMeta fileMeta) throws IOException {
         // Write the data to the file.
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(this.directoryPath + "/" + fileName));
+        File file = new File(this.directoryPath + "/" + fileMeta.name);
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
         bos.write(data);
         bos.flush();
         bos.close();
+        file.setLastModified(fileMeta.lastModifiedEpoch);
     }
 
     public synchronized byte[] readFromDisk(String fileName) throws IOException {

@@ -20,6 +20,8 @@ public class RUDPSocket {
     private final RUDPPacketReceiverManager packetReceiverManager;
     public final String clientKey;
 
+    public boolean debug = false;
+
     public RUDPSocket(DatagramSocket socket, InetAddress destinationAddress, int destinationPortNumber) {
         this.socket = socket;
         this.destinationAddress = destinationAddress;
@@ -61,7 +63,7 @@ public class RUDPSocket {
      * It is the manager's responsibility to check if the packet has been received.
      */
     private void startSenderManagerTimer() {
-        System.out.println("Starting packet sender manager");
+        if(debug) System.out.println("Starting packet sender manager");
         this.isPacketSenderManagerRunning = true;
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -69,14 +71,14 @@ public class RUDPSocket {
                            public synchronized void run() {
                                RUDPDataPacket dataPacket = packetSenderManager.getPacketToSend();
                                if (dataPacket == null) {
-                                   System.out.println("No more packets to send: " + RUDPSocket.this.destinationAddress + ":" + RUDPSocket.this.destinationPortNumber);
+                                   if(debug) System.out.println("No more packets to send: " + RUDPSocket.this.destinationAddress + ":" + RUDPSocket.this.destinationPortNumber);
                                    isPacketSenderManagerRunning = false;
                                    timer.cancel();
                                    return;
                                }
 
                                try {
-                                   System.out.println("***********************\n" + "ReSending data: " + dataPacket + "\n To: " + RUDPSocket.this.destinationAddress + ":" + RUDPSocket.this.destinationPortNumber + "\n***********************");
+                                   if(debug)System.out.println("***********************\n" + "ReSending data: " + dataPacket + "\n To: " + RUDPSocket.this.destinationAddress + ":" + RUDPSocket.this.destinationPortNumber + "\n***********************");
                                    RUDPSocket.this.retransmitPacket(dataPacket);
                                } catch (IOException e) {
                                    e.printStackTrace();

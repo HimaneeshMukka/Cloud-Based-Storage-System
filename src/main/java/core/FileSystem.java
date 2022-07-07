@@ -94,7 +94,11 @@ public class FileSystem {
         // Set operation: (A - B)
         cachedSet.removeAll(newSet);
         // Filters cachedFiles and returns all the files present in the cachedSet
-        return this.cachedFiles.values().stream().filter((x) -> cachedSet.contains(x.name)).toList();
+        return this.cachedFiles.values().stream().filter((x) -> cachedSet.contains(x.name)).map(x -> {
+            x.operation = FileOperation.DELETE;
+            x.lastModifiedEpoch = System.currentTimeMillis();
+            return x;
+        }).toList();
     }
 
     /**
@@ -108,7 +112,7 @@ public class FileSystem {
 
         // Set Operation: (A - B)
         newSet.removeAll(cachedSet);
-        return newList.stream().filter((x) -> newSet.contains(x.name)).toList();
+        return newList.stream().filter((x) -> newSet.contains(x.name)).peek(x -> x.operation = FileOperation.CREATE).toList();
     }
 
     /**
@@ -122,7 +126,7 @@ public class FileSystem {
             newMap.put(s.name, s);
 
         // The name should be same but the hashcode must be different.
-        return newMap.values().stream().filter(x -> this.cachedFiles.containsKey(x.name) && x.hashCode() != this.cachedFiles.get(x.name).hashCode()).toList();
+        return newMap.values().stream().filter(x -> this.cachedFiles.containsKey(x.name) && x.hashCode() != this.cachedFiles.get(x.name).hashCode()).peek(x -> x.operation = FileOperation.UPDATE).toList();
     }
 
     /**
@@ -171,15 +175,17 @@ public class FileSystem {
 
     public synchronized byte[] readFromDisk(String fileName) throws IOException {
         // Read the data from the file.
+        File file = new File(this.directoryPath + "/" + fileName);
+        if(!file.exists()) return new byte[0];
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(this.directoryPath + "/" + fileName));
         byte[] data = bis.readAllBytes();
         bis.close();
         return data;
     }
 
-    public synchronized void deleteFromDisk(String fileName) {
+    public synchronized void deleteFromDisk(FileMeta fileMeta)  {
         // Delete the file.
-        File file = new File(this.directoryPath + "/" + fileName);
-        file.delete();
+        File file = new File(this.directoryPath + "/" + fileMeta.name);
+        if(file.exists()) file.delete();
     }
 }

@@ -18,11 +18,13 @@ public class FileMeta implements Comparable<FileMeta>, Serializable {
     /** Size of the file in bytes */
     public final long length;
     /** Last modified epoch in milliseconds */
-    public final long lastModifiedEpoch;
+    public long lastModifiedEpoch;
     /** Last modified date */
     public final LocalDate lastModifiedDate;
     /** Serializable version ID */
     public static final long serialVersionUID = 1L;
+
+    public FileOperation operation = FileOperation.NONE;
 
 
     /**
@@ -58,7 +60,7 @@ public class FileMeta implements Comparable<FileMeta>, Serializable {
 
     @Override
     public String toString() {
-        return this.name + "\t\t" + this.length + "B" + "\t\t" + this.lastModifiedDate + "\t\t" + this.lastModifiedEpoch;
+        return this.name + " " + this.length + "B" + " " + " " + this.lastModifiedEpoch + " " + this.operation;
     }
 
 }

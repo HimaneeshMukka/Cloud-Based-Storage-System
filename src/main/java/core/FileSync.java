@@ -8,10 +8,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FileSync {
-    String FILE_SYNC_DIR = "/Users/skreweverything/server";
-    volatile ConcurrentMap<String, AtomicInteger> sequenceNumberMap = new ConcurrentHashMap<>();
-    volatile FileSystem fs;
-
+    final public String FILE_SYNC_DIR;
+    public volatile ConcurrentMap<String, AtomicInteger> sequenceNumberMap = new ConcurrentHashMap<>();
+    public volatile FileSystem fs;
 
     public FileSync(String dir) {
         this.FILE_SYNC_DIR = dir;
@@ -40,6 +39,11 @@ public class FileSync {
         socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), RUDPDataPacketType.EOD, ObjectType.LIST_FILEMETA));
 
     }
+
+    public void sendChangelistFileMeta(RUDPSocket socket, List<FileMeta> changedFiles) throws IOException, InterruptedException {
+        socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), changedFiles, ObjectType.LIST_FILEMETA));
+        socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), RUDPDataPacketType.EOD, ObjectType.LIST_FILEMETA));
+    }
     public void processList(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
         ObjectType type = dataPacketList.get(0).objectType;
         if(type == ObjectType.LIST_FILEMETA) {
@@ -63,16 +67,24 @@ public class FileSync {
         List<FileMeta> fromOther = (List<FileMeta>) dataPacketList.get(0).data;
         List<FileMeta> fromUs = fs.getCachedFiles();
         List<FileMeta> filesWeWant = fromOther.stream().filter(f -> {
+            if(f.operation == FileOperation.DELETE) {
+                return false;
+            }
             for (FileMeta f2 : fromUs) {
+
                 if (f.name.equals(f2.name)) {
                     return f.lastModifiedEpoch > f2.lastModifiedEpoch;
                 }
+
             }
             return true;
         }).toList();
 
-        System.out.println("FileMeta we got from client: " + fromOther);
-        System.out.println("FileMeta we have: " + fromUs);
+        List<FileMeta> filesToDelete = fromOther.stream().filter(f -> f.operation == FileOperation.DELETE).toList();
+        for(FileMeta fm: filesToDelete) fs.deleteFromDisk(fm);
+
+//        System.out.println("FileMeta we got from client: " + fromOther);
+//        System.out.println("FileMeta we have: " + fromUs);
 //        System.out.println("Files we need to send: " + newVersionFiles);
 
         if (filesWeWant.size() > 0) {
@@ -80,7 +92,7 @@ public class FileSync {
             sendListOfFilesNeeded(filesWeWant, socket);
         }
         else {
-            System.out.println("We don't need any files from client.");
+//            System.out.println("We don't need any files from client.");
         }
 
     }

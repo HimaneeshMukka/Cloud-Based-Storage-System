@@ -29,7 +29,7 @@ public class Server {
 
             while (true) {
                 List<RUDPDataPacket> packets = socket.consumeAllPackets();
-                System.out.println("Received " + packets.size() + " packets. -> " + packets);
+//                System.out.println("Received " + packets.size() + " packets. -> " + packets);
                 fileSync.processList(packets, socket);
             }
 
@@ -44,7 +44,7 @@ public class Server {
                     changedFiles.addAll(fileSync.fs.getAddedFiles());
                     changedFiles.addAll(fileSync.fs.getModifiedFiles());
                     changedFiles.addAll(fileSync.fs.getDeletedFiles());
-                    System.out.println("Changed files: " + changedFiles);
+//                    System.out.println("Changed files: " + changedFiles);
                     fileSync.fs.reloadCachedFiles();
                     if(changedFiles.isEmpty()) return;
 

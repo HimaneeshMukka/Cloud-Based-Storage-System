@@ -18,6 +18,7 @@ public class Client {
 
         RUDP client = new RUDP();
         RUDPSocket socket = client.connect(InetAddress.getLocalHost(), 5000);
+        System.out.println("Connected to server");
         fileSync.sequenceNumberMap.put(socket.clientKey, new AtomicInteger(-1));
         fileSync.sendCachedFileMeta(socket);
 
@@ -34,7 +35,7 @@ public class Client {
 
         while(true) {
             List<RUDPDataPacket> packets = socket.consumeAllPackets();
-            System.out.println("Received " + packets.size() + " packets. -> " + packets);
+//            System.out.println("Received " + packets.size() + " packets. -> " + packets);
             fileSync.processList(packets, socket);
         }
 //        data = client.receive();

@@ -19,6 +19,7 @@ public class RUDP implements Closeable {
     private final ConcurrentMap<String, RUDPSocket> clients = new ConcurrentHashMap<>();
     private final StringBuilder isListening = new StringBuilder("false");
     private NewConnectionCallBack newConnectionCallBack = null;
+    private boolean isServer = false;
 
 
     /**
@@ -39,6 +40,7 @@ public class RUDP implements Closeable {
      */
     public RUDP(int portNumber, NewConnectionCallBack newConnectionCallBack) throws SocketException {
         this.socket = new DatagramSocket(portNumber);
+        this.isServer = true;
         this.newConnectionCallBack = newConnectionCallBack;
         this.listen();
     }
@@ -54,6 +56,7 @@ public class RUDP implements Closeable {
         this.isListening.setLength(0);
         this.isListening.append("true");
         if (this.debug) System.out.println("Listening");
+        if(this.isServer) System.out.println("Server started! Listening on port " + this.socket.getLocalPort());
         // Rceive packets thread
         new Thread(() -> {
             try {

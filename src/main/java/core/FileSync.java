@@ -56,6 +56,7 @@ public class FileSync {
         else if (type == ObjectType.FILE_DATA) {
             // In this we get a file data, and we need to save it to the file system.
             processReceivedFileData(dataPacketList, socket);
+            System.out.println("Sync complete!");
         }
         else {
             System.out.println("Unknown object type: " + type + ", Type: " + dataPacketList.get(0).type);
@@ -82,6 +83,7 @@ public class FileSync {
 
         List<FileMeta> filesToDelete = fromOther.stream().filter(f -> f.operation == FileOperation.DELETE).toList();
         for(FileMeta fm: filesToDelete) fs.deleteFromDisk(fm);
+        if(!filesToDelete.isEmpty()) System.out.println("Sync completed! Deleted " + filesToDelete.size() + " files.");
 
 //        System.out.println("FileMeta we got from client: " + fromOther);
 //        System.out.println("FileMeta we have: " + fromUs);
@@ -93,6 +95,7 @@ public class FileSync {
         }
         else {
 //            System.out.println("We don't need any files from client.");
+            System.out.println("Already in sync!");
         }
 
     }

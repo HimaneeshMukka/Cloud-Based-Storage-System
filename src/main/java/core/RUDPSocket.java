@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Thread.sleep;
 
 public class RUDPSocket {
+    public volatile AtomicInteger sequenceNumber = new AtomicInteger(-1);
     public final InetAddress destinationAddress;
     public final int destinationPortNumber;
     private final DatagramSocket socket;

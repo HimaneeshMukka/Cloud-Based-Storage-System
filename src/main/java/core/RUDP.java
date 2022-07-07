@@ -54,6 +54,7 @@ public class RUDP implements Closeable {
         this.isListening.setLength(0);
         this.isListening.append("true");
         if (this.debug) System.out.println("Listening");
+        // Rceive packets thread
         new Thread(() -> {
             try {
                 while (true) {

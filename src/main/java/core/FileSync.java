@@ -1,43 +1,25 @@
-import core.*;
+package core;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.lang.Thread.sleep;
+public class FileSync {
+    String FILE_SYNC_DIR = "/Users/skreweverything/server";
+    volatile ConcurrentMap<String, AtomicInteger> sequenceNumberMap = new ConcurrentHashMap<>();
+    volatile FileSystem fs;
 
-public class Client {
-    static FileSystem fs;
-    static final int scanTimerInterval = 4000; // in milliseconds
-    static volatile ConcurrentMap<String, AtomicInteger> sequenceNumberMap = new ConcurrentHashMap<>();
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        RUDP client = new RUDP();
-        RUDPSocket socket = client.connect(InetAddress.getLocalHost(), 5000);
-        sequenceNumberMap.put(socket.clientKey, new AtomicInteger(-1));
-        sendCachedFileMeta(socket);
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    sendChangelistFileMeta(socket);
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 1000, scanTimerInterval);
-        while(true) {
-            List<RUDPDataPacket> packets = socket.consumeAllPackets();
-            System.out.println("Received " + packets.size() + " packets. -> " + packets);
-            processList(packets, socket);
-        }
-//        data = client.receive();
-//        System.out.println("Received data from server: " + data);
+
+    public FileSync(String dir) {
+        this.FILE_SYNC_DIR = dir;
+        this.fs = new FileSystem(FILE_SYNC_DIR);
     }
 
-    public static void sendCachedFileMeta(RUDPSocket socket) throws IOException, InterruptedException {
+
+    public void sendCachedFileMeta(RUDPSocket socket) throws IOException, InterruptedException {
 //        System.out.println("Sending first sync...");
         fs.reloadCachedFiles();
         socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), fs.getCachedFiles(), ObjectType.LIST_FILEMETA));
@@ -46,7 +28,7 @@ public class Client {
 //        System.out.println("Sent first sync.");
     }
 
-    public static void sendChangelistFileMeta(RUDPSocket socket) throws IOException, InterruptedException {
+    public void sendChangelistFileMeta(RUDPSocket socket) throws IOException, InterruptedException {
         List<FileMeta> changedFiles = new ArrayList<>();
         changedFiles.addAll(fs.getAddedFiles());
         changedFiles.addAll(fs.getModifiedFiles());
@@ -58,7 +40,7 @@ public class Client {
         socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), RUDPDataPacketType.EOD, ObjectType.LIST_FILEMETA));
 
     }
-    public static void processList(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
+    public void processList(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
         ObjectType type = dataPacketList.get(0).objectType;
         if(type == ObjectType.LIST_FILEMETA) {
             // In this we get a list of FileMeta data, and we need to decide which files we need from client.
@@ -76,7 +58,7 @@ public class Client {
         }
     }
 
-    public static void processReceivedFileMeta(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
+    public void processReceivedFileMeta(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
         fs.reloadCachedFiles();
         List<FileMeta> fromOther = (List<FileMeta>) dataPacketList.get(0).data;
         List<FileMeta> fromUs = fs.getCachedFiles();
@@ -101,15 +83,14 @@ public class Client {
             System.out.println("We don't need any files from client.");
         }
 
-
     }
 
-    public static void sendListOfFilesNeeded(List<FileMeta> files, RUDPSocket socket) throws IOException {
+    public void sendListOfFilesNeeded(List<FileMeta> files, RUDPSocket socket) throws IOException {
         socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), files, ObjectType.LIST_FILEMETA_NEEDED));
         socket.send(new RUDPDataPacket(sequenceNumberMap.get(socket.clientKey).incrementAndGet(), RUDPDataPacketType.EOD, ObjectType.LIST_FILEMETA_NEEDED));
     }
 
-    public static void sendFiles(List<FileMeta> files, RUDPSocket socket) throws IOException {
+    public void sendFiles(List<FileMeta> files, RUDPSocket socket) throws IOException {
         for(FileMeta f : files) {
             byte[] data = fs.readFromDisk(f.name);
             List<FileData> fileDataList = FileData.splitDataAndGetPackets(data, 4096, f);
@@ -125,7 +106,7 @@ public class Client {
         }
     }
 
-    public static void processReceivedFileData(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
+    public void processReceivedFileData(List<RUDPDataPacket> dataPacketList, RUDPSocket socket) throws IOException {
         List<FileData> fileDataList = new ArrayList<>();
         for(RUDPDataPacket p : dataPacketList) {
             fileDataList.add((FileData) p.data);
@@ -133,4 +114,5 @@ public class Client {
         FileData fileData = FileData.combinePackets(fileDataList);
         fs.writeToDisk(fileData.data, fileData.fileMeta);
     }
+
 }

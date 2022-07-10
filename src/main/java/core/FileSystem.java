@@ -166,20 +166,24 @@ public class FileSystem {
     public synchronized void writeToDisk(byte[] data, FileMeta fileMeta) throws IOException {
         // Write the data to the file.
         File file = new File(this.directoryPath + "/" + fileMeta.name);
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
-        bos.write(data);
-        bos.flush();
-        bos.close();
-        file.setLastModified(fileMeta.lastModifiedEpoch);
+//        synchronized (file) {
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+            bos.write(data);
+            bos.flush();
+            bos.close();
+            file.setLastModified(fileMeta.lastModifiedEpoch);
+//        }
     }
 
     public synchronized byte[] readFromDisk(String fileName) throws IOException {
         // Read the data from the file.
         File file = new File(this.directoryPath + "/" + fileName);
-        if(!file.exists()) return new byte[0];
+        //        synchronized (file) {
+        if (!file.exists()) return new byte[0];
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(this.directoryPath + "/" + fileName));
         byte[] data = bis.readAllBytes();
         bis.close();
+//        }
         return data;
     }
 

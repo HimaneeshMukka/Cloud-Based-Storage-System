@@ -99,4 +99,8 @@ public class RUDPPacketSenderManager {
         this.timeStampsToID.put(currentTimestamp, sequenceID);
         this.idsToTimeStamps.put(sequenceID, currentTimestamp);
     }
+
+    public int totalPacketsWaitingForAcknowledgement() {
+        return this.waitingForAck.size();
+    }
 }

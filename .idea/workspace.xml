@@ -5,8 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="08ee94af-5c00-40b9-824f-86782c39de3d" name="Changes" comment="WIP">
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/SystemTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Server.java" afterDir="false" />
@@ -73,7 +71,30 @@
     "settings.editor.selected.configurable": "coverage"
   }
 }]]></component>
-  <component name="RunManager" selected="Gradle.SystemTest">
+  <component name="RunManager" selected="Gradle.Tests in 'cloud-storage.test'">
+    <configuration name="FileMetaTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;core.FileMetaTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="FileSystemTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -111,29 +132,6 @@
             <option value=":test" />
             <option value="--tests" />
             <option value="&quot;IntegrationTest&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="RUDPPacketSenderManagerTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;core.RUDPPacketSenderManagerTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -188,19 +186,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Gradle.FileMetaTest" />
       <item itemvalue="Gradle.FileSystemTest" />
       <item itemvalue="Gradle.IntegrationTest" />
-      <item itemvalue="Gradle.RUDPPacketSenderManagerTest" />
       <item itemvalue="Gradle.SystemTest" />
       <item itemvalue="Gradle.Tests in 'cloud-storage.test'" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.SystemTest" />
         <item itemvalue="Gradle.Tests in 'cloud-storage.test'" />
+        <item itemvalue="Gradle.SystemTest" />
+        <item itemvalue="Gradle.FileMetaTest" />
         <item itemvalue="Gradle.IntegrationTest" />
         <item itemvalue="Gradle.FileSystemTest" />
-        <item itemvalue="Gradle.RUDPPacketSenderManagerTest" />
       </list>
     </recent_temporary>
   </component>
@@ -214,7 +212,7 @@
       <updated>1656626255090</updated>
       <workItem from="1656626256799" duration="5567000" />
       <workItem from="1656715827793" duration="112802000" />
-      <workItem from="1657002528650" duration="63550000" />
+      <workItem from="1657002528650" duration="72145000" />
     </task>
     <task id="LOCAL-00001" summary="WIP">
       <created>1656742608708</created>
@@ -349,7 +347,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657439437837</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="WIP">
+      <created>1657442873806</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1657442873806</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -372,7 +377,8 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/cloud_storage$FileSystemTest.ic" NAME="FileSystemTest Coverage Results" MODIFIED="1657439381104" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/cloud_storage$SystemTest.ic" NAME="SystemTest Coverage Results" MODIFIED="1657442036001" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/cloud_storage$FileMetaTest.ic" NAME="FileMetaTest Coverage Results" MODIFIED="1657442708433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/cloud_storage$SystemTest.ic" NAME="SystemTest Coverage Results" MODIFIED="1657453459299" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/cloud_storage$RUDPPacketSenderManagerTest_testGotAcks.ic" NAME="RUDPPacketSenderManagerTest.testGotAcks Coverage Results" MODIFIED="1657435191701" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/cloud_storage$RUDPPacketReceiverManagerTest_consumePacketWithMissingPacketAndAvoidBlocking.ic" NAME="RUDPPacketReceiverManagerTest.consumePacketWithMissingPacketAndAvoidBlocking Coverage Results" MODIFIED="1657434350797" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/cloud_storage$RUDPPacketSenderManagerTest.ic" NAME="RUDPPacketSenderManagerTest Coverage Results" MODIFIED="1657436605159" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />

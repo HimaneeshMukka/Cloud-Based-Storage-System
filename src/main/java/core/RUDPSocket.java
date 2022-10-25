@@ -127,7 +127,7 @@ public class RUDPSocket {
                 e.printStackTrace();
             }
 
-        }, 5000);
+        }, 500);
     }
 
     /**
@@ -163,12 +163,12 @@ public class RUDPSocket {
         return baos.toByteArray();
     }
 
-    private RUDPDataPacket convertByteArrayToObject(byte[] buffer) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream byteStream = new ByteArrayInputStream(buffer);
-        ObjectInputStream is = new ObjectInputStream(new BufferedInputStream(byteStream));
-        Object o = is.readObject();
-        return (RUDPDataPacket) o;
-    }
+//    private RUDPDataPacket convertByteArrayToObject(byte[] buffer) throws IOException, ClassNotFoundException {
+//        ByteArrayInputStream byteStream = new ByteArrayInputStream(buffer);
+//        ObjectInputStream is = new ObjectInputStream(new BufferedInputStream(byteStream));
+//        Object o = is.readObject();
+//        return (RUDPDataPacket) o;
+//    }
 
 
 }

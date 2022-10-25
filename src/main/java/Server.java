@@ -11,12 +11,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Server {
-    static FileSync fileSync = new FileSync("/Users/skreweverything/server/");
+    static FileSync fileSync;
     static final int scanTimerInterval = 400; // in milliseconds
 
     static ConcurrentMap<String, RUDPSocket> clientSockets = new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+        fileSync = new FileSync(args[0]);
         RUDP server = new RUDP(5000, (socket) -> {
             if(!clientSockets.containsKey(socket.clientKey)) {
                 clientSockets.put(socket.clientKey, socket);

@@ -129,39 +129,39 @@ public class FileSystem {
         return newMap.values().stream().filter(x -> this.cachedFiles.containsKey(x.name) && x.hashCode() != this.cachedFiles.get(x.name).hashCode()).peek(x -> x.operation = FileOperation.UPDATE).toList();
     }
 
-    /**
-     * Scans the directory and returns the list of newer version files based on previous cached files last modified.
-     * @param otherVersionFiles Map of other version files
-     * @return List of newer version files
-     */
-    public List<FileMeta> getNewVersionFiles(Map<String, FileMeta> otherVersionFiles) {
-        Set<String> newSet = new HashSet<>(otherVersionFiles.keySet());
-        Set<String> oldSet = new HashSet<>(this.cachedFiles.keySet());
-
-        oldSet.removeAll(newSet); // A - B
-        newSet.retainAll(this.cachedFiles.keySet()); // A n B
-
-        // The file is present in both sets and the older version file is compared with newer version file's last modified
-        return this.cachedFiles.values().stream().filter(x -> {
-            return oldSet.contains(x.name) ||
-                    (newSet.contains(x.name) && otherVersionFiles.get(x.name).lastModifiedEpoch < x.lastModifiedEpoch);
-        }).toList();
-
-    }
-
-    /**
-     * Scans the directory and returns the list of newer version files based on previous cached files last modified.
-     * @param newFiles List of other version files
-     * @return List of newer version files
-     */
-    public List<FileMeta> getNewVersionFiles(List<FileMeta> newFiles) {
-        Map<String, FileMeta> map = new HashMap<>();
-
-        for(FileMeta s: newFiles)
-            map.put(s.name, s);
-
-        return this.getNewVersionFiles(map);
-    }
+//    /**
+//     * Scans the directory and returns the list of newer version files based on previous cached files last modified.
+//     * @param otherVersionFiles Map of other version files
+//     * @return List of newer version files
+//     */
+//    public List<FileMeta> getNewVersionFiles(Map<String, FileMeta> otherVersionFiles) {
+//        Set<String> newSet = new HashSet<>(otherVersionFiles.keySet());
+//        Set<String> oldSet = new HashSet<>(this.cachedFiles.keySet());
+//
+//        oldSet.removeAll(newSet); // A - B
+//        newSet.retainAll(this.cachedFiles.keySet()); // A n B
+//
+//        // The file is present in both sets and the older version file is compared with newer version file's last modified
+//        return this.cachedFiles.values().stream().filter(x -> {
+//            return oldSet.contains(x.name) ||
+//                    (newSet.contains(x.name) && otherVersionFiles.get(x.name).lastModifiedEpoch < x.lastModifiedEpoch);
+//        }).toList();
+//
+//    }
+//
+//    /**
+//     * Scans the directory and returns the list of newer version files based on previous cached files last modified.
+//     * @param newFiles List of other version files
+//     * @return List of newer version files
+//     */
+//    public List<FileMeta> getNewVersionFiles(List<FileMeta> newFiles) {
+//        Map<String, FileMeta> map = new HashMap<>();
+//
+//        for(FileMeta s: newFiles)
+//            map.put(s.name, s);
+//
+//        return this.getNewVersionFiles(map);
+//    }
 
     public synchronized void writeToDisk(byte[] data, FileMeta fileMeta) throws IOException {
         // Write the data to the file.
